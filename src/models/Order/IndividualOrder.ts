@@ -11,10 +11,13 @@ type IndividualOrderDocument = Document & {
   deliveryTime: string;
   orderedAt: string;
   isFinished: boolean;
+  orderedMarkedAtFinishedTime: string;
+  otherId: string;
 };
 
 const individualOrderSchema = new mongoose.Schema<IndividualOrderDocument>({
   itemName: String,
+  otherId: String,
   quantity: String,
   price: String,
   customerName: String,
@@ -26,6 +29,7 @@ const individualOrderSchema = new mongoose.Schema<IndividualOrderDocument>({
     default: "10",
   },
   orderedAt: String,
+  orderedMarkedAtFinishedTime: String,
   isFinished: {
     type: Boolean,
     default: false,

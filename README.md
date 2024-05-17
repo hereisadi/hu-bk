@@ -1,10 +1,7 @@
-# Backend NodeJS Template with Typescript
-This template can be used as a boiler plate for building a backend nodejs application with typescript.
-
+# Campus Need Backend
 
 ## Features:
-  - Inbuilt account management. So you don't need to do every time you start building your backend project
-  - User registration and verification by email
+  - Customer can make the orders, and seller can manage all orders with ease
 
 ## Getting Started
 ### Prerequisites
@@ -27,10 +24,14 @@ This template can be used as a boiler plate for building a backend nodejs applic
         
     #email credentials
     EMAIL = <e-mail address, from which you will be sending the account verification emails to new users> ex:"test@gmail.com"
+
     PASSWORD = <app passowrd which you can get from google account dashboard> 
        
     #Database server connection URI
     MONGODB_URL = 'mongodb://<user_name>:<password>@xxxxx.test.com:xxxxx/<db_name>'
+
+    # Frontend website link:
+    website = http://localhost:3000/
 
   - Run ``$ pnpm dev`` to start back end on port 3080
 

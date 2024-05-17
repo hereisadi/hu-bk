@@ -3,7 +3,7 @@ import { AuthRequest } from "../../../../utils/types/AuthRequest";
 import { verifyToken } from "../../../../middlewares/VerifyToken";
 import crypto from "crypto";
 import { User } from "../../../../models/LocalAuth/User";
-import moment from "moment-timezone";
+// import moment from "moment-timezone";
 import { sendEmail } from "../../../../utils/EmailService";
 
 export const sendEmailVerificationLink = async (
@@ -32,18 +32,11 @@ export const sendEmailVerificationLink = async (
 
         const token = crypto.randomBytes(48).toString("hex") as string;
 
-        const tokenExpiresAt = moment
-          .tz("Asia/Kolkata")
-          .add(1, "hour")
-          .format("DD-MM-YY h:mma") as string;
-
-        if (!token || !tokenExpiresAt) {
-          return res
-            .status(400)
-            .json({ message: "Either token or tokenExpiresAt is missing" });
+        if (!token) {
+          return res.status(400).json({ message: "token is missing" });
         }
         user.token = token;
-        user.tokenExpiresAt = tokenExpiresAt;
+
         await user.save();
         const verifyEmailLink = `${
           process.env.website as string
@@ -52,15 +45,13 @@ export const sendEmailVerificationLink = async (
         sendEmail(
           Email,
           " Verify Email",
-          `Click on this link to verify your email: ${verifyEmailLink} \n Link is valid for 60 minutes`
+          `Click on this link to verify your email: ${verifyEmailLink} \n `
         );
 
-        return res
-          .status(200)
-          .json({
-            success: true,
-            message: "verification email sent sucessfully",
-          });
+        return res.status(200).json({
+          success: true,
+          message: "verification email sent sucessfully",
+        });
       }
     } catch (err) {
       console.error(err);

@@ -4,6 +4,7 @@ import { verifyToken } from "../../../middlewares/VerifyToken";
 import { User } from "../../../models/LocalAuth/User";
 import { IndividualOrder } from "../../../models/Order/IndividualOrder";
 import { sendEmail } from "../../../utils/EmailService";
+import { notification } from "../../../models/Notification/notification";
 
 // DELETE FOR ADMIN ONLY
 // role: admin
@@ -25,9 +26,19 @@ export const deleteOrder = async (req: AuthRequest, res: Response) => {
       }
 
       if (user.role === "admin") {
-        const { orderId } = req.body as { orderId: string };
-        if (!orderId) {
+        const { orderId, otherId, currentTime } = req.body as {
+          orderId: string;
+          currentTime: string;
+          otherId: string;
+        };
+        if (!orderId || !otherId) {
           return res.status(400).json({ error: "Please provide the orderId" });
+        }
+
+        if (!currentTime) {
+          return res
+            .status(400)
+            .json({ error: "Please provide the currentTime" });
         }
 
         const order = await IndividualOrder.findById(orderId);
@@ -42,6 +53,20 @@ export const deleteOrder = async (req: AuthRequest, res: Response) => {
           "Your Order has been deleted",
           `Hello ${order.customerName}, Your order has been deleted by the shop owner. If you have any queries please contact the shop owner.\n Thank you.`
         );
+
+        const thatNotification = await notification.findOne({
+          otherId: otherId,
+        });
+        if (!thatNotification) {
+          return res.status(404).json({ error: "Notification not found" });
+        }
+        thatNotification.client.push({
+          title: "Your order has been deleted",
+          desc: `Your Order has been deleted by the shop owner. If you have any queries please contact the shop owner.`,
+          time: currentTime,
+          email: order.customerEmail,
+        });
+        await thatNotification.save();
 
         return res.status(200).json({ message: "Order deleted successfully" });
       }

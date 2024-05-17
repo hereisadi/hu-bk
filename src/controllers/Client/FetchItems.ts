@@ -3,6 +3,9 @@ import { AuthRequest } from "../../utils/types/AuthRequest";
 import { verifyToken } from "../../middlewares/VerifyToken";
 import { User } from "../../models/LocalAuth/User";
 import { IndividualItem } from "../../models/Products/IndividualItem";
+import { notification } from "../../models/Notification/notification";
+import { eachClientNotification } from "../../utils/interfaces/studentNotification";
+import { customSort } from "../../utils/Sort/CustomSort";
 
 // fetch items and categories for the client and admin
 // role: client and admin
@@ -36,13 +39,42 @@ export const fetchItems = async (req: AuthRequest, res: Response) => {
             allCategories.push(item.category);
           }
         }
-        return res
-          .status(200)
-          .json({
-            message: "Items fetched successfully",
-            items: allItems,
-            category: allCategories,
-          });
+
+        // getting all the noticications
+        const allNotifications = await notification.find({});
+        const clientData: eachClientNotification[] = [];
+
+        for (const notification of allNotifications) {
+          if (notification.client && Array.isArray(notification.client)) {
+            clientData.push(...notification.client);
+          }
+        }
+
+        const filteredClientNotificationsUnsorted = clientData.filter(
+          (clientData) => {
+            return clientData.email === user.email;
+          }
+        );
+
+        const notificationsTime = filteredClientNotificationsUnsorted.map(
+          (notification) => notification.time
+        );
+
+        const sortedNotificationsTime = customSort(notificationsTime, -1); // newest to oldest
+
+        const allClientNotifications = sortedNotificationsTime.map(
+          (time: any) =>
+            filteredClientNotificationsUnsorted.find(
+              (notification) => notification.time === time
+            )
+        );
+
+        return res.status(200).json({
+          message: "Items fetched successfully",
+          items: allItems,
+          notifications: allClientNotifications,
+          category: allCategories,
+        });
       }
     } catch (err) {
       console.error(err);

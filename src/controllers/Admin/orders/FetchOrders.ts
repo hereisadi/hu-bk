@@ -3,7 +3,9 @@ import { AuthRequest } from "../../../utils/types/AuthRequest";
 import { verifyToken } from "../../../middlewares/VerifyToken";
 import { User } from "../../../models/LocalAuth/User";
 import { IndividualOrder } from "../../../models/Order/IndividualOrder";
-
+import { notification } from "../../../models/Notification/notification";
+import { eachAdminNotification } from "../../../utils/interfaces/adminNotification";
+import { customSort } from "../../../utils/Sort/CustomSort";
 // GET /orders for the admin only
 
 export const fetchOrders = async (req: AuthRequest, res: Response) => {
@@ -24,12 +26,32 @@ export const fetchOrders = async (req: AuthRequest, res: Response) => {
         const allPendingOrders = await IndividualOrder.find({
           isFinished: false,
         });
-        return res
-          .status(200)
-          .json({
-            message: "Orders fetched successfully",
-            orders: allPendingOrders,
-          });
+
+        // getting all the noticications
+        const allNotifications = await notification.find({});
+        const adminData: eachAdminNotification[] = [];
+
+        for (const notification of allNotifications) {
+          if (notification.admin && Array.isArray(notification.admin)) {
+            adminData.push(...notification.admin);
+          }
+        }
+
+        const notificationsTime = adminData.map(
+          (notification) => notification.time
+        );
+
+        const sortedNotificationsTime = customSort(notificationsTime, -1); // newest to oldest
+
+        const allAdminNotification = sortedNotificationsTime.map((time: any) =>
+          adminData.find((notification) => notification.time === time)
+        );
+
+        return res.status(200).json({
+          message: "Orders fetched successfully",
+          orders: allPendingOrders,
+          notifications: allAdminNotification,
+        });
       } else {
         return res.status(401).json({ error: "Unauthorized" });
       }

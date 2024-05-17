@@ -5,7 +5,6 @@ import { CError, CSuccess } from "../../utils/ChalkCustomStyles";
 import jwt from "jsonwebtoken";
 import dotEnv from "dotenv";
 dotEnv.config();
-import moment from "moment-timezone";
 
 import rateLimit from "express-rate-limit";
 import { isEmail } from "../../utils/isEmail";
@@ -50,7 +49,7 @@ export const login = async (req: Request, res: Response) => {
         if (user.is2faEnabled === false) {
           const passwordMatch = await bcrypt.compare(password, user.password);
           if (!passwordMatch) {
-            return res.status(401).json({ error: "Invalid email or password" });
+            return res.status(401).json({ error: "Invalid password" });
           }
 
           const token = jwt.sign(
@@ -61,64 +60,40 @@ export const login = async (req: Request, res: Response) => {
 
           res.status(200).json({ message: "Login successful", token });
           CSuccess("login successful");
-        } else {
+        } else if (user.is2faEnabled === true) {
           const passwordMatch = await bcrypt.compare(password, user.password);
           if (!passwordMatch) {
-            return res.status(401).json({ error: "Invalid email or password" });
+            return res.status(401).json({ error: "Invalid password" });
           } else {
             const otp = Math.floor(100000 + Math.random() * 900000);
             const OTP = otp.toString().trim();
-            sendEmail(user.email, `[OTP] 2FA `, `Your 2FA OTP is ${OTP}`);
-            const otpExpiresAt = moment
-              .tz("Asia/Kolkata")
-              .add(10, "minutes")
-              .format("DD-MM-YY h:mma") as string;
-            await twoFA.findOneAndUpdate(
-              { email: user.email },
-              { otp: OTP, otpExpiresAt: otpExpiresAt },
-              { upsert: true }
+
+            sendEmail(
+              user.email,
+              `[OTP] Two Factor Authentication OTP `,
+              `Your 2FA OTP is ${OTP} \n\n Do not Share with anyone.`
             );
 
-            res
-              .status(200)
-              .json({
-                message: "Proceed to verify otp page",
-                userEmail: user.email,
+            const preExistingOtp = await twoFA.findOne({ email }).exec();
+            if (preExistingOtp) {
+              await twoFA.findOneAndUpdate({ email }, { otp: OTP });
+            } else {
+              const otpData = new twoFA({
+                email: user.email,
+                otp: OTP,
               });
-            // const otpData = await twoFA.findOne({ email }).exec();
-            // if (!otpData) {
-            //   return res
-            //     .status(400)
-            //     .json({ error: "no otp has been generated, Login failed" });
-            // } else {
+              await otpData.save();
+            }
 
-            //   const { enteredOtp } = req.body as {
-            //     enteredOtp: string;
-            //   }; // this gonna be empty as we are not sending it from frontend as soon as we send otp to user's email
-            // const enteredOTP = enteredOtp.trim();
-            // const storedOTP = otpData.otp?.trim();
-            //   // console.log(storedOTP)
-            //   // console.log(enteredOTP)
-            //   if (enteredOTP !== storedOTP) {
-            //     return res
-            //       .status(400)
-            //       .json({ error: "Invalid OTP, Login failed" });
-            //   } else {
-            //   await twoFA.findOneAndUpdate(
-            //     { email: user.email },
-            //     { otp: undefined },
-            //     { upsert: true }
-            //   );
-            //   const token = jwt.sign(
-            //     { userId: user._id, email: user.email },
-            //     YOUR_SECRET_KEY!,
-            //     { expiresIn: "720h" }
-            //   );
-            //   res.status(200).json({ message: "Login successful", token });
-            //   CSuccess("login successful");
-            // }
-            // }
+            res.status(200).json({
+              message: "Proceed to verify otp page",
+              userEmail: user.email,
+            });
           }
+        } else {
+          return res
+            .status(400)
+            .json({ error: "Something went wrong during login operation" });
         }
       } catch (error) {
         CError("Failed to log in");

@@ -2,6 +2,7 @@ import { Response } from "express";
 import { verifyToken } from "../../../middlewares/VerifyToken";
 import { AuthRequest } from "../../../utils/types/AuthRequest";
 import { User } from "../../../models/LocalAuth/User";
+import bcrypt from "bcrypt";
 
 // PUT to toggle 2fa
 // access: private
@@ -21,6 +22,14 @@ export const toggle2fa = async (req: AuthRequest, res: Response) => {
         return res.status(404).json({ error: "User not found" });
       }
 
+      const { password } = req.body as { password: string };
+      if (!password) {
+        return res.status(400).json({ error: "Please provide the password" });
+      }
+      const passwordMatch = await bcrypt.compare(password, user.password);
+      if (!passwordMatch) {
+        return res.status(401).json({ error: "Invalid password" });
+      }
       if (user.is2faEnabled === false) {
         user.is2faEnabled = true;
         await user.save();

@@ -4,6 +4,8 @@ import { verifyToken } from "../../middlewares/VerifyToken";
 import { User } from "../../models/LocalAuth/User";
 import { IndividualOrder } from "../../models/Order/IndividualOrder";
 import { eachOrder } from "../../utils/interfaces/order";
+import { uniqueid } from "../../utils/createUniqueId";
+import { notification } from "../../models/Notification/notification";
 
 // POST to place an order
 // role: client
@@ -26,6 +28,7 @@ export const placeOrder = async (req: AuthRequest, res: Response) => {
       }
 
       if (user.role === "client") {
+        const randomGeneratedID = uniqueid;
         const { items, currentTime } = req.body as {
           items: eachOrder[];
           currentTime: string;
@@ -48,9 +51,27 @@ export const placeOrder = async (req: AuthRequest, res: Response) => {
             customerAddress: item.customerAddress,
             customerPhone: user.phone,
             orderedAt: currentTime,
+            otherId: randomGeneratedID,
           });
           await saveItem.save();
         }
+
+        const notificationReg = new notification({
+          otherId: randomGeneratedID,
+        });
+        await notificationReg.save();
+
+        // save one notification for the admin
+        const newNotificationForTheAdmin = {
+          title: "New Order Placed",
+          desc: `${user.name}  with the mobile number ${user.phone} has placed an order`,
+          time: currentTime,
+        };
+        const adminNotification = await notification.findOne({
+          otherId: randomGeneratedID,
+        });
+        adminNotification?.admin.push(newNotificationForTheAdmin);
+        await adminNotification?.save();
 
         return res.status(200).json({ message: "Order placed successfully" });
       } else {

@@ -1,7 +1,7 @@
 import { Response, Request } from "express";
 import crypto from "crypto";
 import { User } from "../../../../models/LocalAuth/User";
-import moment from "moment-timezone";
+// import moment from "moment-timezone";
 import { isEmail } from "../../../../utils/isEmail";
 import { sendEmail } from "../../../../utils/EmailService";
 
@@ -24,19 +24,12 @@ export const sendResetPwdLink = async (req: Request, res: Response) => {
 
       const token = crypto.randomBytes(48).toString("hex") as string;
 
-      const tokenExpiresAt = moment
-        .tz("Asia/Kolkata")
-        .add(1, "hour")
-        .format("DD-MM-YY h:mma") as string;
-
-      if (!token || !tokenExpiresAt) {
-        return res
-          .status(400)
-          .json({ message: "Either token or tokenExpiresAt is missing" });
+      if (!token) {
+        return res.status(400).json({ message: "token is missing" });
       }
 
       user.token = token;
-      user.tokenExpiresAt = tokenExpiresAt;
+      // user.tokenExpiresAt = tokenExpiresAt;
       await user.save();
       const verifyEmailLink = `${
         process.env.website as string
@@ -44,7 +37,7 @@ export const sendResetPwdLink = async (req: Request, res: Response) => {
 
       sendEmail(
         Email,
-        " Reset Password",
+        "Reset Password",
         `Click on this link to reset your password: ${verifyEmailLink} \n Link is valid for 60 minutes`
       );
 

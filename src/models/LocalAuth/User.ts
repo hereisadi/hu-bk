@@ -12,6 +12,7 @@ type UserDocument = Document & {
   tokenExpiresAt: string | undefined;
   isVerified: boolean;
   is2faEnabled: boolean;
+  accountCreatedAt: string;
   cart: {
     itemId: string;
     quantity: string;
@@ -30,6 +31,7 @@ const userSchema = new mongoose.Schema<UserDocument>({
     required: true,
     unique: true,
   },
+  accountCreatedAt: String,
   cart: [
     {
       itemId: String,
