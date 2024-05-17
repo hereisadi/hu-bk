@@ -6,14 +6,24 @@ import { User } from "../../models/LocalAuth/User";
 
 export const signup = async (req: Request, res: Response) => {
   isEmail(req, res, async () => {
-    const { name, email, password, confirmPassword } = req.body as {
-      name: string;
-      email: string;
-      password: string;
-      confirmPassword: string;
-    };
+    const { name, email, password, confirmPassword, address, phone } =
+      req.body as {
+        name: string;
+        email: string;
+        password: string;
+        confirmPassword: string;
+        address: string;
+        phone: string;
+      };
 
-    if (!name || !email || !password || !confirmPassword) {
+    if (
+      !name ||
+      !email ||
+      !password ||
+      !confirmPassword ||
+      !address ||
+      !phone
+    ) {
       return res.status(400).json({ error: "Please fill all required fields" });
     }
 
@@ -21,6 +31,8 @@ export const signup = async (req: Request, res: Response) => {
     const Sname = name.trim();
     const Spassword = password.trim();
     const SconfirmPassword = confirmPassword.trim();
+    const Saddress = address.trim();
+    const Sphone = phone.trim();
 
     try {
       if (Spassword.length < 8) {
@@ -43,6 +55,8 @@ export const signup = async (req: Request, res: Response) => {
         name: Sname,
         email: Semail,
         password: hashedPassword,
+        phone: Sphone,
+        address: Saddress,
       });
 
       await user.save();

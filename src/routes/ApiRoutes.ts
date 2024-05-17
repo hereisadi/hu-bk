@@ -11,6 +11,12 @@ import { sendResetPwdLink } from "../controllers/LocalAuth/magiclink/forgotpassw
 import { resetPwd } from "../controllers/LocalAuth/magiclink/forgotpassword/Resetpassword";
 import { toggle2fa } from "../controllers/LocalAuth/2fa/toggle2fa";
 import { verify2faOtp } from "../controllers/LocalAuth/2fa/verify2faotp";
+import { placeOrder } from "../controllers/Client/PlaceOrder";
+import { addItem } from "../controllers/Admin/AddItem";
+import { editItem } from "../controllers/Admin/EditItem";
+import { deleteItem } from "../controllers/Admin/DeleteItem";
+import { deleteOrder } from "../controllers/Admin/orders/DeleteOrder";
+import { toggleAvailabilityForSale } from "../controllers/Admin/orders/MarkCategoryNotForSale";
 
 const router = express.Router();
 
@@ -50,4 +56,43 @@ router.put("/toggle2fa", twoFaHandler);
 
 //2fa
 router.post("/verify2faotp", verify2faOtp);
+
+// ! app specific routes
+
+// place order
+const PlaceOrderHandler = (req: Request, res: Response) => {
+  placeOrder(req as AuthRequest, res);
+};
+router.post("/placeorder", PlaceOrderHandler);
+
+// add item for the admin
+const AddItemHandler = (req: Request, res: Response) => {
+  addItem(req as AuthRequest, res);
+};
+router.post("/additem", AddItemHandler);
+
+// edit item
+const EditItemHandler = (req: Request, res: Response) => {
+  editItem(req as AuthRequest, res);
+};
+router.put("/edititem", EditItemHandler);
+
+// delete item
+const DeleteItemHandler = (req: Request, res: Response) => {
+  deleteItem(req as AuthRequest, res);
+};
+router.delete("/deleteitem", DeleteItemHandler);
+
+// delete order for the admin
+const DeleteOrderHandler = (req: Request, res: Response) => {
+  deleteOrder(req as AuthRequest, res);
+};
+router.delete("/deleteorder", DeleteOrderHandler);
+
+// toggle availability for sale
+const ToggleAvailabilityHandler = (req: Request, res: Response) => {
+  toggleAvailabilityForSale(req as AuthRequest, res);
+};
+router.put("/toggleavailabilityforsale", ToggleAvailabilityHandler);
+
 export default router;

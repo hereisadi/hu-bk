@@ -5,6 +5,8 @@ type UserDocument = Document & {
   email: string;
   password: string;
   role: string;
+  phone: string;
+  address: string;
   deleteAccount: boolean;
   token: string | undefined;
   tokenExpiresAt: string | undefined;
@@ -14,6 +16,8 @@ type UserDocument = Document & {
 
 const userSchema = new mongoose.Schema<UserDocument>({
   name: String,
+  phone: String,
+  address: String,
   email: {
     type: String,
     required: true,

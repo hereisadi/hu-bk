@@ -16,6 +16,7 @@
   "author": "NITSMUN",
   "license": "ISC",
   "dependencies": {
+    "@types/dotenv": "^8.2.0",
     "@types/node": "^20.8.5",
     "@types/passport": "^1.0.13",
     "bcrypt": "^5.1.1",
