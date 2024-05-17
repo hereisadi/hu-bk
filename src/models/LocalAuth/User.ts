@@ -12,6 +12,13 @@ type UserDocument = Document & {
   tokenExpiresAt: string | undefined;
   isVerified: boolean;
   is2faEnabled: boolean;
+  cart: {
+    itemId: string;
+    quantity: string;
+    itemName: string;
+    price: string;
+    itemImage: string;
+  }[];
 };
 
 const userSchema = new mongoose.Schema<UserDocument>({
@@ -23,6 +30,15 @@ const userSchema = new mongoose.Schema<UserDocument>({
     required: true,
     unique: true,
   },
+  cart: [
+    {
+      itemId: String,
+      quantity: String,
+      itemName: String,
+      price: String,
+      itemImage: String,
+    },
+  ],
   role: {
     type: String,
     required: true,

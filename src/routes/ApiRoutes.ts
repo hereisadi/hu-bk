@@ -17,6 +17,12 @@ import { editItem } from "../controllers/Admin/EditItem";
 import { deleteItem } from "../controllers/Admin/DeleteItem";
 import { deleteOrder } from "../controllers/Admin/orders/DeleteOrder";
 import { toggleAvailabilityForSale } from "../controllers/Admin/orders/MarkCategoryNotForSale";
+import { addToCart } from "../controllers/Client/AddToCart";
+import { removeFromCart } from "../controllers/Client/RemoveFromCart";
+import { fetchItems } from "../controllers/Client/FetchItems";
+import { addDeliveryTime } from "../controllers/Admin/orders/AddDeliveryTime";
+import { markOrderAsDone } from "../controllers/Admin/orders/MarkOrderAsDone";
+import { fetchOrders } from "../controllers/Admin/orders/FetchOrders";
 
 const router = express.Router();
 
@@ -94,5 +100,41 @@ const ToggleAvailabilityHandler = (req: Request, res: Response) => {
   toggleAvailabilityForSale(req as AuthRequest, res);
 };
 router.put("/toggleavailabilityforsale", ToggleAvailabilityHandler);
+
+// add to cart
+const AddTocartHandler = (req: Request, res: Response) => {
+  addToCart(req as AuthRequest, res);
+};
+router.post("/addtocart", AddTocartHandler);
+
+// remove from cart
+const RemoveFromCartHandler = (req: Request, res: Response) => {
+  removeFromCart(req as AuthRequest, res);
+};
+router.post("/removefromcart", RemoveFromCartHandler);
+
+// fetch all items
+const GetItemsHandler = (req: Request, res: Response) => {
+  fetchItems(req as AuthRequest, res);
+};
+router.get("/items", GetItemsHandler);
+
+// add custom delivery time
+const DeliveryTimeHandler = (req: Request, res: Response) => {
+  addDeliveryTime(req as AuthRequest, res);
+};
+router.put("/adddeliverytime", DeliveryTimeHandler);
+
+// mark order as done
+const OrderAsDoneHandler = (req: Request, res: Response) => {
+  markOrderAsDone(req as AuthRequest, res);
+};
+router.put("/markorderasdone", OrderAsDoneHandler);
+
+// fetch all orders for the admin
+const AllOrdersHandler = (req: Request, res: Response) => {
+  fetchOrders(req as AuthRequest, res);
+};
+router.get("/orders", AllOrdersHandler);
 
 export default router;
